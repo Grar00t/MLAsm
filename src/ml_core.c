@@ -280,9 +280,11 @@ ml_error_t ml_predict(const ml_model_t* model,
     
     g_perf_stats.total_predictions++;
     g_perf_stats.total_time_ns += elapsed_ns;
-    g_perf_stats.avg_latency_us = (double)g_perf_stats.total_time_ns / 
+    g_perf_stats.avg_latency_us = (double)g_perf_stats.total_time_ns /
                                  (double)g_perf_stats.total_predictions / 1000.0;
-    g_perf_stats.throughput_per_sec = 1000000000.0 / g_perf_stats.avg_latency_us * 1000.0;
+    g_perf_stats.throughput_per_sec = g_perf_stats.total_time_ns == 0 ? 0.0 :
+        ((double)g_perf_stats.total_predictions * 1000000000.0) /
+        (double)g_perf_stats.total_time_ns;
     
     return result;
 }

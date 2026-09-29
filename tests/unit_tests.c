@@ -59,15 +59,17 @@ static char current_suite[MAX_TEST_NAME_LENGTH] = "";
 
 #define UNIT_TEST_ASSERT_FLOAT_EQ(actual, expected, test_name) do { \
     unit_tests_run++; \
-    float diff = fabsf((actual) - (expected)); \
-    if (diff < UNIT_TEST_TOLERANCE) { \
+    const double _actual = (double)(actual); \
+    const double _expected = (double)(expected); \
+    const double _diff = fabs(_actual - _expected); \
+    if (_diff < (double)UNIT_TEST_TOLERANCE) { \
         unit_tests_passed++; \
         printf("  ✓ %s\n", test_name); \
     } else { \
         unit_tests_failed++; \
         printf("  ✗ %s [FAILED]\n", test_name); \
-        printf("    Expected: %.6f, Got: %.6f (diff: %.6f)\n", \
-               (float)(expected), (float)(actual), diff); \
+        printf("    Expected: %.6f, Got: %.6f (diff: %.6e)\n", \
+               _expected, _actual, _diff); \
         printf("    File: %s:%d\n", __FILE__, __LINE__); \
     } \
 } while(0)
@@ -619,8 +621,13 @@ void test_performance_stats_unit(void) {
         
         ml_get_performance_stats(&stats);
         UNIT_TEST_ASSERT_EQ(stats.total_predictions, 10, "Predictions count after 10 calls");
-        UNIT_TEST_ASSERT(stats.avg_latency_us >= 0.0f, "Average latency is non-negative");
-        UNIT_TEST_ASSERT(stats.throughput_per_sec >= 0.0f, "Throughput is non-negative");
+        UNIT_TEST_ASSERT(stats.avg_latency_us > 0.0, "Average latency is positive");
+        UNIT_TEST_ASSERT(stats.throughput_per_sec > 0.0, "Throughput is positive");
+        double throughput_from_latency = 1000000.0 / stats.avg_latency_us;
+        double throughput_rel_error = fabs(stats.throughput_per_sec - throughput_from_latency) /
+                                      throughput_from_latency;
+        UNIT_TEST_ASSERT(throughput_rel_error < 1e-12,
+                         "Throughput units agree with microsecond latency");
         
         ml_free_model(model);
     }

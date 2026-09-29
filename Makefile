@@ -55,23 +55,23 @@ directories:
 	@mkdir -p $(LIB_DIR) $(INCLUDE_DIR)
 
 # Compile assembly sources
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.asm
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.asm | directories
 	$(NASM) $(ASM_FLAGS) $< -o $@
 
 # Compile assembly sources for shared library
-$(BUILD_DIR)/shared/%.o: $(SRC_DIR)/%.asm
+$(BUILD_DIR)/shared/%.o: $(SRC_DIR)/%.asm | directories
 	$(NASM) $(ASM_FLAGS) $< -o $@
 
 # Compile C sources
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | directories
 	$(CC) $(CC_FLAGS) -I$(INCLUDE_DIR) -c $< -o $@
 
 # Compile C sources for shared library
-$(BUILD_DIR)/shared/%.o: $(SRC_DIR)/%.c
+$(BUILD_DIR)/shared/%.o: $(SRC_DIR)/%.c | directories
 	$(CC) $(CC_FLAGS) -fPIC -I$(INCLUDE_DIR) -c $< -o $@
 
 # Compile test sources
-$(BUILD_DIR)/tests/%.o: $(TEST_DIR)/%.c
+$(BUILD_DIR)/tests/%.o: $(TEST_DIR)/%.c | directories
 	$(CC) $(CC_FLAGS) -I$(INCLUDE_DIR) -c $< -o $@
 
 # Create static library
